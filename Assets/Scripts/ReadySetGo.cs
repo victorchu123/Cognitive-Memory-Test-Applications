@@ -277,9 +277,9 @@ public abstract class TryAgain : ExperimentState
 {
 	public override void Draw()
 	{
-		GUI.Label(new Rect(0, 0, Screen.width, Screen.height), "Please try again!", "tryAgain");
+		GUI.Label(new Rect(0, 0, Screen.width, Screen.height/2), "Please try again!", "tryAgain");
 	}
-	public override bool ShouldDrawLine(){return false;}
+	public override bool ShouldDrawLine(){return true;}
 }
 
 public class RSGTryAgain : TryAgain
@@ -296,121 +296,3 @@ public class RSGBlank : DotExpState
 }
 #endregion
 
-/*public override void Draw()
-	{
-		switch(activeState)
-		{
-		case 2:
-			break;
-		case 5:
-			break;
-		default:
-			GUI.DrawTexture (new Rect (currentDataValues[activeState] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel), circleTex);
-			break;
-		}
-	}
-	
-	public override int OnStateChange()
-	{
-		switch(activeState)
-		{
-		case 0:
-			currentDataValues[0] = Random.Range(0.5f, 3.5f) * Data.cmToPixel;
-			currentDataValues[1] = GetRandomPointFromDataSet() + currentDataValues[0];
-			currentDataValues[3] = -1;
-			return 1;
-//		case 3:
-//			return 4;
-//			return 5;
-		default:
-			return activeState + 1;
-		}
-	}*/
-
-/*public bool isActive;
-	public bool isResults;
-	public Material mat;
-	public float time;
-
-	public Data data;
-	public Circle circle;
-
-	public static Vector2 size{ get; private set; }
-	public static float width{ get { return size.y - size.x; } }
-	private float timer = Mathf.NegativeInfinity;
-
-	void Awake()
-	{
-		size = new Vector2 (Screen.width * 0.1f, Screen.width * 0.9f);
-		Debug.Log (size);
-	}
-
-	void Update()
-	{
-		if(Time.time > timer + time && timer != Mathf.NegativeInfinity)
-		{
-			timer = -1;
-			circle.Draw(-1);
-		}
-	}
-	
-	void OnGUI()
-	{
-		if(!isActive)
-		{
-			if(GUI.Button(new Rect(Screen.width / 2 - 150, Screen.height / 2 - 150, 300, 300), "Start"))
-			{
-				isActive = true;
-				timer = Time.time;
-				data.CreateDatapoint();
-			}
-		}
-		else if(!isResults)
-		{
-			if(Time.time <= timer + time)
-			{
-				circle.Draw(data.datapoint);
-			}
-			else if(timer < 0 && timer > Mathf.NegativeInfinity)
-			{
-				if(Input.GetMouseButton(0))
-				{
-					circle.Draw(Mathf.Clamp(Input.mousePosition.x, size.x, size.y));
-				}
-				else if(Input.GetMouseButtonUp (0))
-				{
-					data.selectedPoint = Mathf.RoundToInt(Mathf.Clamp(Input.mousePosition.x, size.x, size.y));
-					isResults = true;
-				}
-			}
-		}
-		else
-		{
-			GUI.Box (new Rect(0, 0, 500, 75), "");
-			GUI.Label(new Rect(0, 0, 500, 25), "Point given: " + data.datapoint + "px");
-			GUI.Label(new Rect(0, 25, 500, 25), "Point chosen: " + data.selectedPoint + "px");
-
-			if(GUI.Button(new Rect(0, 50, 500, 25), "Next"))
-			{
-				isResults = false;
-				timer = Time.time;
-				data.CreateDatapoint();
-			}
-		}
-	}
-
-	void OnPostRender()
-	{
-		if(isActive)
-		{
-			GL.PushMatrix();
-			mat.SetPass (0);
-			GL.LoadPixelMatrix ();
-			GL.Begin (GL.LINES);
-			GL.Color (Color.black);
-			GL.Vertex3 (size.x, Screen.height * 0.5f, 0);
-			GL.Vertex3 (size.y, Screen.height * 0.5f, 0);
-			GL.End ();
-			GL.PopMatrix();
-		}
-	}*/

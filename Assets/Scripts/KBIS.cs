@@ -337,9 +337,9 @@ public class KBISTryAgain : KBISState
 {
 	public override void Draw()
 	{
-		GUI.Label(new Rect(0, 0, Screen.width, Screen.height), "Please try again!", "tryAgain");
+		GUI.Label(new Rect(0, 0, Screen.width, Screen.height/2), "Please try again!", "tryAgain");
 	}
-	public override bool ShouldDrawLine(){return false;}
+	public override bool ShouldDrawLine(){return true;}
 	public override int TimerIndex(){return 4;}
 	public override ExperimentState GetNext(){return new KBISShowFirstLine();}
 }

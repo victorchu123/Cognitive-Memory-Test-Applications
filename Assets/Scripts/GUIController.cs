@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Vectrosity;
 
 public class GUIController : MonoBehaviour {
 	public GUISkin skin;
@@ -15,6 +16,8 @@ public class GUIController : MonoBehaviour {
 	
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
+	private VectorLine myLine;
+	private string idField;
 
 	private GameObject lastPrefab;
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -28,6 +31,13 @@ public class GUIController : MonoBehaviour {
 #if !(UNITY_EDITOR || UNITY_STANDALONE)
 		Data.cmToPixel = Screen.dpi * 0.393701f;
 #endif
+		
+	}
+
+	void createVLine(){
+			Vector2[] linePoints = {new Vector2(0, Screen.height/2), new Vector2(Screen.width,Screen.height/2)};
+			myLine = new VectorLine("expLine", linePoints, null, 4.0f);
+			myLine.color = Color.black;
 	}
 
 	void OnGUI()
@@ -39,16 +49,19 @@ public class GUIController : MonoBehaviour {
 			Experiment currExperiment = null;
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width / 3), "Ready Set Go"))
 			{
+				// createVLine();
 				currExperiment = (Instantiate(RSGPrefab) as GameObject).GetComponent<Experiment>();
 				lastPrefab = RSGPrefab;
 			}
 			if(GUI.Button(new Rect(Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "Interval Estimation"))
 			{
+				// createVLine();
 				currExperiment = (Instantiate(IEPrefab) as GameObject).GetComponent<Experiment>();
 				lastPrefab = IEPrefab;
 			}
 			if(GUI.Button(new Rect(2 * Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "KBIS"))
 			{
+				// createVLine();
 				currExperiment = (Instantiate(KBISPrefab) as GameObject).GetComponent<Experiment>();
 				lastPrefab = KBISPrefab;
 			}
@@ -117,6 +130,12 @@ public class GUIController : MonoBehaviour {
 			GUI.color = Color.white;
 			GUILayout.EndHorizontal();
 #endif
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Subject ID:", GUILayout.ExpandWidth(false));
+			idField = GUILayout.TextField("subjectID_condition_dateRun");
+
+
+			GUILayout.EndHorizontal();
 			if(GUILayout.Button("Save and begin experiment"))
 			{
 				experiment.SaveValues();
@@ -141,12 +160,14 @@ public class GUIController : MonoBehaviour {
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height / 2 - Screen.width / 8), "Experiment complete\nWhat would you like to do now?", "endText");
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 8, Screen.width /4, Screen.width /4), "Perform the same experiment\nwith the same parameters"))
 			{
+				// createVLine();
 				experiment = (Instantiate(lastPrefab) as GameObject).GetComponent<Experiment>();
 				experiment.SaveValues();
 				state = ProgramState.WAITINGTOBEGIN;
 			}
 			if(GUI.Button(new Rect(Screen.width / 4, Screen.height / 2 - Screen.width / 8, Screen.width /4, Screen.width /4), "Perform the same experiment\nwith different parameters"))
 			{
+				// createVLine();
 				experiment = (Instantiate(lastPrefab) as GameObject).GetComponent<Experiment>();
 				state = ProgramState.CONFIG;
 				screenfields.Clear();
@@ -158,11 +179,13 @@ public class GUIController : MonoBehaviour {
 			}
 			if(GUI.Button(new Rect(2 * Screen.width / 4, Screen.height / 2 - Screen.width / 8, Screen.width /4, Screen.width /4), "Choose a different experiment"))
 			{
+				// createVLine();
 				state = ProgramState.SELECTTYPE;
 				screenfields.Clear();
 			}
 			if(GUI.Button(new Rect(3 * Screen.width / 4, Screen.height / 2 - Screen.width / 8, Screen.width /4, Screen.width /4), "Exit the program"))
 			{
+				// createVLine();
 				Application.Quit();
 			}
 			break;
@@ -190,96 +213,14 @@ public class GUIController : MonoBehaviour {
 			experiment.DrawLine();
 			GL.End ();
 			GL.PopMatrix();
+			
+		// 	myLine.Draw();
 		}
+		// else if(state == ProgramState.COMPLETE)
+		// {
+		// 	VectorLine.Destroy(ref myLine);
+		// }
 	}
-
-	/*public bool isActive;
-	public bool isResults;
-	public Material mat;
-	public float time;
-
-	public Data data;
-	public Circle circle;
-
-	public static Vector2 size{ get; private set; }
-	public static float width{ get { return size.y - size.x; } }
-	private float timer = Mathf.NegativeInfinity;
-
-	void Awake()
-	{
-		size = new Vector2 (Screen.width * 0.1f, Screen.width * 0.9f);
-		Debug.Log (size);
-	}
-
-	void Update()
-	{
-		if(Time.time > timer + time && timer != Mathf.NegativeInfinity)
-		{
-			timer = -1;
-			circle.Draw(-1);
-		}
-	}
-	
-	void OnGUI()
-	{
-		if(!isActive)
-		{
-			if(GUI.Button(new Rect(Screen.width / 2 - 150, Screen.height / 2 - 150, 300, 300), "Start"))
-			{
-				isActive = true;
-				timer = Time.time;
-				data.CreateDatapoint();
-			}
-		}
-		else if(!isResults)
-		{
-			if(Time.time <= timer + time)
-			{
-				circle.Draw(data.datapoint);
-			}
-			else if(timer < 0 && timer > Mathf.NegativeInfinity)
-			{
-				if(Input.GetMouseButton(0))
-				{
-					circle.Draw(Mathf.Clamp(Input.mousePosition.x, size.x, size.y));
-				}
-				else if(Input.GetMouseButtonUp (0))
-				{
-					data.selectedPoint = Mathf.RoundToInt(Mathf.Clamp(Input.mousePosition.x, size.x, size.y));
-					isResults = true;
-				}
-			}
-		}
-		else
-		{
-			GUI.Box (new Rect(0, 0, 500, 75), "");
-			GUI.Label(new Rect(0, 0, 500, 25), "Point given: " + data.datapoint + "px");
-			GUI.Label(new Rect(0, 25, 500, 25), "Point chosen: " + data.selectedPoint + "px");
-
-			if(GUI.Button(new Rect(0, 50, 500, 25), "Next"))
-			{
-				isResults = false;
-				timer = Time.time;
-				data.CreateDatapoint();
-			}
-		}
-	}
-
-	void OnPostRender()
-	{
-		if(isActive)
-		{
-			GL.PushMatrix();
-			mat.SetPass (0);
-			GL.LoadPixelMatrix ();
-			GL.Begin (GL.LINES);
-			GL.Color (Color.black);
-			GL.Vertex3 (size.x, Screen.height * 0.5f, 0);
-			GL.Vertex3 (size.y, Screen.height * 0.5f, 0);
-			GL.End ();
-			GL.PopMatrix();
-		}
-	}*/
 }
 
 public enum ProgramState
