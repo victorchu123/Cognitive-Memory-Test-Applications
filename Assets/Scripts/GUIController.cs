@@ -17,7 +17,7 @@ public class GUIController : MonoBehaviour {
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
 	private VectorLine myLine;
-	private string idField;
+	public static string idField = "subjectID_condition_dateRun";
 
 	private GameObject lastPrefab;
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -132,7 +132,7 @@ public class GUIController : MonoBehaviour {
 #endif
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Subject ID:", GUILayout.ExpandWidth(false));
-			idField = GUILayout.TextField("subjectID_condition_dateRun");
+			idField = GUILayout.TextField(idField);
 
 
 			GUILayout.EndHorizontal();

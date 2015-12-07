@@ -6,8 +6,8 @@ public abstract class DotExperiment : Experiment {
 	public Texture2D circleTex;
 	protected bool useLongDataSet;
 	protected readonly string[] dataSetLabels = new string[]{"Use short data set", "Use long data set"};
-	protected readonly float[] shortDataSet = new float[]{2.0f, 2.8f, 3.6f, 4.4f, 5.2f, 6.0f, 6.8f, 6.7f, 8.4f, 9.2f, 10f};
-	protected readonly float[] longDataSet = new float[]{6.0f, 6.8f, 6.7f, 8.4f, 9.2f, 10f, 10.8f, 11.6f, 12.4f, 13.2f, 14.0f};
+	protected readonly float[] shortDataSet = new float[]{2.0f, 2.4f, 2.8f, 3.2f, 3.6f, 4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f};
+	protected readonly float[] longDataSet = new float[]{4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f, 6.4f, 6.8f, 7.2f, 7.6f, 8.0f};
 	
 	public override float GetRandomPointFromDataSet()
 	{
@@ -103,6 +103,7 @@ public class ReadySetGo : DotExperiment {
 		SaveValues("RSGValues");
 		
 		data = new Data(new Dictionary<string, string>(){
+							{"subjectID", GUIController.idField},
 							{"stimScreen1",screens[0].Value.ToString()}, {"stimScreen2",screens[1].Value.ToString()},
 							{"respScreen",screens[2].Value.ToString()}, {"dispScreen",screens[3].Value.ToString()},
 							{"delay",screens[5].Value.ToString()}, {"blockLength",numberOfTrials.ToString()},
