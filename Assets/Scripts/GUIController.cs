@@ -11,6 +11,8 @@ public class GUIController : MonoBehaviour {
 	public GameObject IEPrefab;
 	public GameObject KBISPrefab;
 	public Material mat;
+	public Texture buttonTex;
+	public Experiment currExperiment = null;
 	
 	public static Experiment experiment{get; protected set;}
 	
@@ -46,7 +48,6 @@ public class GUIController : MonoBehaviour {
 		switch(state)
 		{
 		case ProgramState.SELECTTYPE:
-			Experiment currExperiment = null;
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width / 3), "Ready Set Go"))
 			{
 				// createVLine();
@@ -80,7 +81,18 @@ public class GUIController : MonoBehaviour {
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
 			float tempScrnValue;
 			GUILayout.BeginVertical();
-			GUILayout.Label("Screen durations (ms)");
+			
+			
+			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
+			GUILayout.Label(currExperiment.GetName());
+
+			GUILayout.EndVertical();
+		
+			GUILayout.BeginVertical();
+			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperLeft;
+
+
+			GUILayout.Label("Screen durations (ms):");
 			for(int i = 0; i < experiment.screens.Count; i++)
 			{
 				GUILayout.BeginHorizontal();
@@ -145,7 +157,8 @@ public class GUIController : MonoBehaviour {
 			GUILayout.EndArea();
 			break;
 		case ProgramState.WAITINGTOBEGIN:
-			if(GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "Start"))
+			bool startButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "Touch to Start!");
+			if(startButton)
 			{
 				state = ProgramState.RUNNING;
 			}

@@ -85,12 +85,12 @@ public class ReadySetGo : DotExperiment {
 		if(!LoadValues("RSGValues"))
 		{
 			screens = new List<BasicKeyValuePair<string, float>>(){
-				new BasicKeyValuePair<string, float>("First Dot", 3000),
-				new BasicKeyValuePair<string, float>("Second Dot", 3000),
-				new BasicKeyValuePair<string, float>("Wait for User", 3000),
-				new BasicKeyValuePair<string, float>("Display User Answer", 3000),
-				new BasicKeyValuePair<string, float>("\"Please try again!\"", 3000),
-				new BasicKeyValuePair<string, float>("Blank screen", 3000)
+				new BasicKeyValuePair<string, float>("First Dot:", 3000),
+				new BasicKeyValuePair<string, float>("Second Dot:", 3000),
+				new BasicKeyValuePair<string, float>("Wait for User:", 3000),
+				new BasicKeyValuePair<string, float>("Display User Answer:", 3000),
+				new BasicKeyValuePair<string, float>("\"Please try again:\"", 3000),
+				new BasicKeyValuePair<string, float>("Blank screen Between Trials:", 3000)
 			};
 		}
 		currentDataValues = new Dictionary<string, float>(){{"time", -1}, {"delta", -1}, {"leftDot", -1}, {"rightDot", -1}, {"selectedDot", -1}, {"selectedDotY", -1}};

@@ -9,12 +9,12 @@ public class IntervalEstimation : DotExperiment {
 		if(!LoadValues("IEValues"))
 		{
 			screens = new List<BasicKeyValuePair<string, float>>(){
-				new BasicKeyValuePair<string, float>("Show Interval", 3000),
-				new BasicKeyValuePair<string, float>("Blank Screen Before Prompt", 3000),
-				new BasicKeyValuePair<string, float>("Show Prompt / Wait for User", 3000),
-				new BasicKeyValuePair<string, float>("Display User Answer", 3000),
-				new BasicKeyValuePair<string, float>("\"Please try again!\"", 3000),
-				new BasicKeyValuePair<string, float>("Blank Screen Between Experiments", 3000)
+				new BasicKeyValuePair<string, float>("Show Interval:", 3000),
+				new BasicKeyValuePair<string, float>("Blank Screen Before Prompt:", 3000),
+				new BasicKeyValuePair<string, float>("Show Prompt / Wait for User:", 3000),
+				new BasicKeyValuePair<string, float>("Display User Answer:", 3000),
+				new BasicKeyValuePair<string, float>("\"Please try again:\"", 3000),
+				new BasicKeyValuePair<string, float>("Blank Screen Between Trials:", 3000)
 			};
 		}
 		currentDataValues = new Dictionary<string, float>(){{"time", -1}, {"delta", -1}, {"leftDot", -1}, {"rightDot", -1}, {"promptDot", -1}, {"selectedDot", -1}, {"selectedDotY", -1}};

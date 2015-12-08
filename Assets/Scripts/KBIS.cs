@@ -14,12 +14,12 @@ public class KBIS : Experiment {
 		if(!LoadValues("KBISValues"))
 		{
 			screens = new List<BasicKeyValuePair<string, float>>(){
-				new BasicKeyValuePair<string, float>("Show Centered Line", 3000),
-				new BasicKeyValuePair<string, float>("Blank Screen Before Prompt", 3000),
-				new BasicKeyValuePair<string, float>("Show Prompt / Wait for Use", 3000),
-				new BasicKeyValuePair<string, float>("Display User Answer", 3000),
-				new BasicKeyValuePair<string, float>("\"Please try again!\"", 3000),
-				new BasicKeyValuePair<string, float>("Blank Screen Between Experiments", 3000)
+				new BasicKeyValuePair<string, float>("Show Centered Line:", 3000),
+				new BasicKeyValuePair<string, float>("Blank Screen Before Prompt:", 3000),
+				new BasicKeyValuePair<string, float>("Show Prompt / Wait for Use:", 3000),
+				new BasicKeyValuePair<string, float>("Display User Answer:", 3000),
+				new BasicKeyValuePair<string, float>("\"Please try again:\"", 3000),
+				new BasicKeyValuePair<string, float>("Blank Screen Between Trials:", 3000)
 			};
 		}
 		currentDataValues = new Dictionary<string, float>(){{"time", -1}, {"promptLineX", -1}, {"promptLineY", -1}, {"promptLineLength", -1}, {"targetPoint", -1}, {"selectedPoint", -1}, {"selectedPointY", -1}};
