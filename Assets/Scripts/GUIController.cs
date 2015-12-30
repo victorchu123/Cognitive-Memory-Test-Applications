@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ public class GUIController : MonoBehaviour {
 	public GameObject RSGPrefab;
 	public GameObject IEPrefab;
 	public GameObject KBISPrefab;
+	private GameObject currAsset;
 	public Material mat;
 	public Texture buttonTex;
 	public Experiment currExperiment = null;
@@ -51,19 +52,22 @@ public class GUIController : MonoBehaviour {
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width / 3), "Ready Set Go"))
 			{
 				// createVLine();
-				currExperiment = (Instantiate(RSGPrefab) as GameObject).GetComponent<Experiment>();
+				currAsset = Instantiate(RSGPrefab);
+				currExperiment = (currAsset as GameObject).GetComponent<Experiment>();
 				lastPrefab = RSGPrefab;
 			}
 			if(GUI.Button(new Rect(Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "Interval Estimation"))
 			{
 				// createVLine();
-				currExperiment = (Instantiate(IEPrefab) as GameObject).GetComponent<Experiment>();
+				currAsset = Instantiate(IEPrefab);
+				currExperiment = (currAsset as GameObject).GetComponent<Experiment>();
 				lastPrefab = IEPrefab;
 			}
 			if(GUI.Button(new Rect(2 * Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "KBIS"))
 			{
 				// createVLine();
-				currExperiment = (Instantiate(KBISPrefab) as GameObject).GetComponent<Experiment>();
+				currAsset = Instantiate(KBISPrefab);
+				currExperiment = (currAsset as GameObject).GetComponent<Experiment>();
 				lastPrefab = KBISPrefab;
 			}
 			if(currExperiment != null)
@@ -78,11 +82,18 @@ public class GUIController : MonoBehaviour {
 			}
 			break;
 		case ProgramState.CONFIG:
+
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
 			float tempScrnValue;
 			GUILayout.BeginVertical();
-			
-			
+
+			// returns back to previous selection screen 
+			if(GUILayout.Button("Back", new GUILayoutOption[] { GUILayout.Width(80), GUILayout.Height(50)}))
+			{
+				Destroy(currAsset);
+				state = ProgramState.SELECTTYPE;
+			}
+
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
 			GUILayout.Label(currExperiment.GetName());
 
@@ -90,7 +101,6 @@ public class GUIController : MonoBehaviour {
 		
 			GUILayout.BeginVertical();
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperLeft;
-
 
 			GUILayout.Label("Screen durations (ms):");
 			for(int i = 0; i < experiment.screens.Count; i++)
@@ -124,6 +134,7 @@ public class GUIController : MonoBehaviour {
 			}
 			trialsfield = GUILayout.TextField(trialsfield);
 			GUI.color = Color.white;
+
 			GUILayout.EndHorizontal();
 			experiment.AddlParameters();
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -153,6 +164,7 @@ public class GUIController : MonoBehaviour {
 				experiment.SaveValues();
 				state = ProgramState.WAITINGTOBEGIN;
 			}
+
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
 			break;
@@ -207,13 +219,25 @@ public class GUIController : MonoBehaviour {
 	
 	void Update()
 	{
+		
+		if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 8, Screen.width /8, Screen.width /4), "Back"))
+		{
+			state = ProgramState.SELECTTYPE;
+			// screenfields.Clear();
+		}
 		if(state == ProgramState.RUNNING)
 		{
 			if(experiment != null)
 				experiment.OnUpdate();
 		}
+
 	}
-	
+
+	// void OnMouseOver(){
+	// 	st
+
+	// }
+		
 	protected void OnPostRender()
 	{
 		if(state == ProgramState.RUNNING)
