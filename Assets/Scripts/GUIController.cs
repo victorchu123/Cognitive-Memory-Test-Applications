@@ -179,7 +179,16 @@ public class GUIController : MonoBehaviour {
 			if(experiment != null)
 				experiment.activeState.Draw();
 			else
+				state = ProgramState.THANKYOU;
+			break;
+
+		case ProgramState.THANKYOU:
+
+			GUI.Label(new Rect(0, 0, Screen.width, Screen.height/3), "Thank you!", "thanks");
+
+			if (GUILayout.Button("hi")){
 				state = ProgramState.COMPLETE;
+			}
 			break;
 		case ProgramState.COMPLETE:
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height / 2 - Screen.width / 8), "Experiment complete\nWhat would you like to do now?", "endText");
@@ -262,5 +271,5 @@ public class GUIController : MonoBehaviour {
 
 public enum ProgramState
 {
-	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, COMPLETE
+	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, THANKYOU, COMPLETE
 }
