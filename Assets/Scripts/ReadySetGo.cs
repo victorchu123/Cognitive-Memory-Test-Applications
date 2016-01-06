@@ -132,10 +132,15 @@ public abstract class DotExpState : ExperimentState
 public class RSGInit : DotExpState
 {
 	private bool isDone = false;
+	private int curr_trialNum; 
 	public override int TimerIndex(){return -1;}
-	public override ExperimentState GetNext(){return (isDone ? (new IsDoneState() as ExperimentState) : (new RSGShowLeft() as ExperimentState));}
+	public override ExperimentState GetNext(){
+		return (isDone ? (new IsDoneState() as ExperimentState) : (new RSGShowLeft() as ExperimentState));
+	}
+
 	public RSGInit()
-	{
+	{	
+
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
 		{
 			experiment.currentDataValues["leftDot"] = Random.Range(0.5f, 3.5f) * Data.cmToPixel;
@@ -292,7 +297,13 @@ public class RSGTryAgain : TryAgain
 public class RSGBlank : DotExpState
 {
 	public override int TimerIndex(){return 5;}
-	public override ExperimentState GetNext(){return new RSGInit();}
+	public override ExperimentState GetNext()
+	{
+		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+			GUIController.state = ProgramState.INTERMISSION;
+		}
+		return new RSGInit();
+	}
 	public override bool ShouldDrawLine(){return true;}
 }
 #endregion

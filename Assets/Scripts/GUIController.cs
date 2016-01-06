@@ -6,7 +6,6 @@ using Vectrosity;
 
 public class GUIController : MonoBehaviour {
 	public GUISkin skin;
-	public ProgramState state = ProgramState.SELECTTYPE;
 	public GameObject RSGPrefab;
 	public GameObject IEPrefab;
 	public GameObject KBISPrefab;
@@ -14,15 +13,19 @@ public class GUIController : MonoBehaviour {
 	public Material mat;
 	public Texture buttonTex;
 	public Experiment currExperiment = null;
-	
+
+	public static bool advanceOption = false;
+	public static string idField = "subjectID_condition_dateRun";
+	public static ProgramState state = ProgramState.SELECTTYPE;
 	public static Experiment experiment{get; protected set;}
 	
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
 	private VectorLine myLine;
-	public static string idField = "subjectID_condition_dateRun";
-
 	private GameObject lastPrefab;
+
+	protected readonly string[] advLabels = new string[]{"Auto", "Manual"};
+
 #if UNITY_EDITOR || UNITY_STANDALONE
 	public string dpiField = "40";
 #endif
@@ -37,10 +40,16 @@ public class GUIController : MonoBehaviour {
 		
 	}
 
-	void createVLine(){
+	public void createVLine()
+	{
 			Vector2[] linePoints = {new Vector2(0, Screen.height/2), new Vector2(Screen.width,Screen.height/2)};
 			myLine = new VectorLine("expLine", linePoints, null, 4.0f);
 			myLine.color = Color.black;
+	}
+
+	public void advanceToggle()
+	{
+		advanceOption = GUILayout.SelectionGrid((advanceOption ? 1 : 0), advLabels, 1, "toggle") > 0;
 	}
 
 	void OnGUI()
@@ -87,7 +96,9 @@ public class GUIController : MonoBehaviour {
 			float tempScrnValue;
 			GUILayout.BeginVertical();
 
-			// returns back to previous selection screen 
+			GUILayout.BeginHorizontal();
+
+			// returns back to previous selection screen and destroys current Asset
 			if(GUILayout.Button("Back", new GUILayoutOption[] { GUILayout.Width(80), GUILayout.Height(50)}))
 			{
 				Destroy(currAsset);
@@ -97,6 +108,7 @@ public class GUIController : MonoBehaviour {
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
 			GUILayout.Label(currExperiment.GetName());
 
+			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
 		
 			GUILayout.BeginVertical();
@@ -136,7 +148,10 @@ public class GUIController : MonoBehaviour {
 			GUI.color = Color.white;
 
 			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
 			experiment.AddlParameters();
+			advanceToggle();
+			GUILayout.EndHorizontal();
 #if UNITY_EDITOR || UNITY_STANDALONE
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Simulated DPI:", GUILayout.ExpandWidth(false));
@@ -180,6 +195,30 @@ public class GUIController : MonoBehaviour {
 				experiment.activeState.Draw();
 			else
 				state = ProgramState.THANKYOU;
+			break;
+
+		case ProgramState.INTERMISSION:
+			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
+			GUILayout.BeginVertical();
+
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Quit")){
+				experiment.SaveValues();
+				Destroy(currAsset);
+				state = ProgramState.SELECTTYPE;
+			}
+
+			GUILayout.EndHorizontal();
+
+			if (GUILayout.Button("Continue")){
+				state = ProgramState.RUNNING;
+			}
+
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+			break;
+
+		case ProgramState.PAUSE:
 			break;
 
 		case ProgramState.THANKYOU:
@@ -228,18 +267,11 @@ public class GUIController : MonoBehaviour {
 	
 	void Update()
 	{
-		
-		if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 8, Screen.width /8, Screen.width /4), "Back"))
-		{
-			state = ProgramState.SELECTTYPE;
-			// screenfields.Clear();
-		}
 		if(state == ProgramState.RUNNING)
 		{
 			if(experiment != null)
 				experiment.OnUpdate();
 		}
-
 	}
 
 	// void OnMouseOver(){
@@ -271,5 +303,5 @@ public class GUIController : MonoBehaviour {
 
 public enum ProgramState
 {
-	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, THANKYOU, COMPLETE
+	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, INTERMISSION, PAUSE, THANKYOU, COMPLETE
 }

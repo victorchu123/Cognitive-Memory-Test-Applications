@@ -93,14 +93,23 @@ public class IEShowInterval : DotExpState
 public class IEBlank1 : DotExpState
 {
 	public override int TimerIndex(){return 1;}
-	public override ExperimentState GetNext(){return new IEWaitForInput();}
+	public override ExperimentState GetNext()
+	{
+		return new IEWaitForInput();
+	}
 	public override bool ShouldDrawLine(){return true;}
 }
 
 public class IEBlank2 : DotExpState
 {
 	public override int TimerIndex(){return 5;}
-	public override ExperimentState GetNext(){return new IEInit();}
+	public override ExperimentState GetNext()
+	{
+		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+			GUIController.state = ProgramState.INTERMISSION;
+		}
+		return new IEInit();
+	}
 	public override bool ShouldDrawLine(){return true;}
 }
 
