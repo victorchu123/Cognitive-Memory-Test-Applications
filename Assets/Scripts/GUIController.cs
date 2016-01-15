@@ -13,7 +13,8 @@ public class GUIController : MonoBehaviour {
 	public Material mat;
 	public Texture buttonTex;
 	public Experiment currExperiment = null;
-
+ 
+	public static int repeatedNumAllowed;
 	public static bool advanceOption = false;
 	public static string idField = "subjectID_condition_dateRun";
 	public static ProgramState state = ProgramState.SELECTTYPE;
@@ -58,12 +59,15 @@ public class GUIController : MonoBehaviour {
 		switch(state)
 		{
 		case ProgramState.SELECTTYPE:
+
+			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box3");
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width / 3), "Ready Set Go"))
 			{
 				// createVLine();
 				currAsset = Instantiate(RSGPrefab);
 				currExperiment = (currAsset as GameObject).GetComponent<Experiment>();
 				lastPrefab = RSGPrefab;
+				DotExperiment.test();
 			}
 			if(GUI.Button(new Rect(Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "Interval Estimation"))
 			{
@@ -89,6 +93,7 @@ public class GUIController : MonoBehaviour {
 				}
 				trialsfield = experiment.numberOfTrials.ToString();
 			}
+			GUILayout.EndArea();
 			break;
 		case ProgramState.CONFIG:
 
@@ -99,7 +104,7 @@ public class GUIController : MonoBehaviour {
 			GUILayout.BeginHorizontal();
 
 			// returns back to previous selection screen and destroys current Asset
-			if(GUILayout.Button("Back", new GUILayoutOption[] { GUILayout.Width(80), GUILayout.Height(50)}))
+			if(GUILayout.Button("Back","defaultButton", new GUILayoutOption[] { GUILayout.Width(80), GUILayout.Height(50)}))
 			{
 				Destroy(currAsset);
 				state = ProgramState.SELECTTYPE;
@@ -139,6 +144,10 @@ public class GUIController : MonoBehaviour {
 			{
 				int tempTrials = Convert.ToInt32(trialsfield);
 				experiment.numberOfTrials = tempTrials;
+				repeatedNumAllowed = experiment.numberOfTrials/11;
+				if (repeatedNumAllowed <= 0){
+					repeatedNumAllowed = 1;
+				}
 			}
 			catch(Exception e)
 			{
@@ -150,7 +159,9 @@ public class GUIController : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.BeginHorizontal();
 			experiment.AddlParameters();
-			advanceToggle();
+			if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation"){
+				advanceToggle();
+			}
 			GUILayout.EndHorizontal();
 #if UNITY_EDITOR || UNITY_STANDALONE
 			GUILayout.BeginHorizontal();
@@ -174,7 +185,7 @@ public class GUIController : MonoBehaviour {
 
 
 			GUILayout.EndHorizontal();
-			if(GUILayout.Button("Save and begin experiment"))
+			if(GUILayout.Button("Save and begin experiment", "defaultButton"))
 			{
 				experiment.SaveValues();
 				state = ProgramState.WAITINGTOBEGIN;
@@ -184,7 +195,7 @@ public class GUIController : MonoBehaviour {
 			GUILayout.EndArea();
 			break;
 		case ProgramState.WAITINGTOBEGIN:
-			bool startButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "Touch to Start!");
+			bool startButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "", "startButton");
 			if(startButton)
 			{
 				state = ProgramState.RUNNING;
@@ -222,12 +233,19 @@ public class GUIController : MonoBehaviour {
 			break;
 
 		case ProgramState.THANKYOU:
+			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
+			GUILayout.BeginVertical();
 
+			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height/3), "Thank you!", "thanks");
 
-			if (GUILayout.Button("hi")){
+			bool continueButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "Continue");
+			if (continueButton){
 				state = ProgramState.COMPLETE;
 			}
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+
 			break;
 		case ProgramState.COMPLETE:
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height / 2 - Screen.width / 8), "Experiment complete\nWhat would you like to do now?", "endText");

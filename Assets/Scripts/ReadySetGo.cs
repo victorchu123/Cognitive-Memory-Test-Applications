@@ -4,11 +4,30 @@ using System.Collections.Generic;
 
 public abstract class DotExperiment : Experiment {
 	public Texture2D circleTex;
-	protected bool useLongDataSet;
+	public DotExpState currDotState = null;
+
+	public static bool useLongDataSet;
+	public static bool init = false; 
+	private static int dictCount = 0;
 	protected readonly string[] dataSetLabels = new string[]{"Use short data set", "Use long data set"};
-	protected readonly float[] shortDataSet = new float[]{2.0f, 2.4f, 2.8f, 3.2f, 3.6f, 4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f};
-	protected readonly float[] longDataSet = new float[]{4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f, 6.4f, 6.8f, 7.2f, 7.6f, 8.0f};
-	
+	public static float[] shortDataSet = new float[]{2.0f, 2.4f, 2.8f, 3.2f, 3.6f, 4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f};
+	public static float[] longDataSet = new float[]{4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f, 6.4f, 6.8f, 7.2f, 7.6f, 8.0f};
+
+	public static List<float> dataUsed;
+	public static Dictionary<string, int> dataPtFreq;
+
+	public static DotExpState dotState{get; protected set;}
+
+
+	public static float[] getCurrentSet(){
+		if(useLongDataSet){
+			return longDataSet;
+		}
+		else{
+			return shortDataSet;
+		}
+	}
+
 	public override float GetRandomPointFromDataSet()
 	{
 		if(useLongDataSet)
@@ -43,7 +62,15 @@ public abstract class DotExperiment : Experiment {
 	}
 	
 	protected abstract void CreateDatapoint(string selectedDot, string retry);
-	
+
+	void Start(){
+		Debug.Log("Start Ran");
+
+		if(dotState == null)
+			init = true;
+
+	}
+
 	public override void OnUpdate()
 	{
 		if(activeState != null)
@@ -76,6 +103,114 @@ public abstract class DotExperiment : Experiment {
 		}
 		base.OnUpdate();
 	}
+
+	public static bool isInList(List<float> ls, float datapt)
+	{	
+		if (ls.Count == 0){
+			return false;
+		}
+		ls.Sort();
+		int resultIndex = ls.BinarySearch(datapt);
+
+		if (resultIndex < 0){
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+
+	//unit test for isInList
+	public static void test()
+	{
+		List<float> l = new List<float>(new float[]{2.0f, 2.4f, 3.0f, 3.4f, 4.0f});
+
+		// for(int i = 0; i < l.Count; i++){
+		// 	Debug.Log(System.Convert.ToString(l[i]));
+		// }
+
+		if (isInList(l, 2.4f)){
+			Debug.Log("Binary Search works");
+		}
+		else{
+			Debug.Log("Binary Search fails");
+		}
+	}
+
+	public static bool generateRandAgain(float leftPt){
+
+		int temp = 0; 
+
+		if (dataPtFreq.TryGetValue(System.Convert.ToString(leftPt), out temp)){
+			int num = dataPtFreq[System.Convert.ToString(leftPt)];
+			if (GUIController.repeatedNumAllowed <= num){
+				return true;
+			}
+
+			else{
+				return false;
+			}
+		}
+		else{
+			return false;
+		}
+	}
+
+	public static void initializeDict()
+	{
+		dataPtFreq = new Dictionary<string, int>();
+		Debug.Log("InitializeDict Ran");
+		float[] currentSet = DotExperiment.getCurrentSet();
+
+		foreach(float datapoint in currentSet){
+			// Debug.Log(System.Convert.ToString(datapoint));
+			dataPtFreq.Add(System.Convert.ToString(datapoint), 0);
+		}
+
+	}
+
+	public static void updateDictFreq(){
+		
+		List<float> itemsToRemove = new List<float>();
+
+		foreach (float usedPoint in dataUsed){
+			dataPtFreq[System.Convert.ToString(usedPoint)]++;
+			itemsToRemove.Add(usedPoint);
+		}
+
+		foreach(float value in itemsToRemove){
+			dataUsed.Remove(value);
+		}
+		
+		printDict();
+	}
+
+	public static void printDict(){
+
+		string output = "Dictionary Iteration #" + System.Convert.ToString(dictCount) +  ": ----------------------------";
+		Debug.Log(output);
+		foreach (var value in dataPtFreq){
+			Debug.Log(System.Convert.ToString(value));
+		}
+		dictCount++;
+	
+	}
+
+	public static void initializeLst(){
+		dataUsed = new List<float>();
+	}
+
+	public static void addToUsedLst(float usedPt){
+		dataUsed.Add(usedPt);
+	}
+
+	public static void printLst(){
+		Debug.Log("Current Used DataPoint List:----------------------------");
+		foreach (var value in dataUsed){
+			Debug.Log(System.Convert.ToString(value));
+		}
+	}
+
 }
 
 public class ReadySetGo : DotExperiment {
@@ -119,20 +254,21 @@ public class ReadySetGo : DotExperiment {
 		                     GetDataValueString(currentDataValues["rightDot"]), currentDataValues["delta"].ToString(),
 		                     selectedDot, ((Time.time - timer) * 1000).ToString(), retry);
 	}
-	
-	protected override ExperimentState GetFirstState(){return new RSGInit();}
+
+	protected override ExperimentState GetFirstState(){
+		return new RSGInit();
+	}
 }
 
 #region States
 public abstract class DotExpState : ExperimentState
-{
+{	
 	public DotExperiment experiment {get{return (GUIController.experiment as DotExperiment);}}
 }
 
 public class RSGInit : DotExpState
-{
+{	
 	private bool isDone = false;
-	private int curr_trialNum; 
 	public override int TimerIndex(){return -1;}
 	public override ExperimentState GetNext(){
 		return (isDone ? (new IsDoneState() as ExperimentState) : (new RSGShowLeft() as ExperimentState));
@@ -140,15 +276,30 @@ public class RSGInit : DotExpState
 
 	public RSGInit()
 	{	
-
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
-		{
+		{	
+			if (DotExperiment.init == true){
+				DotExperiment.initializeDict();
+				DotExperiment.initializeLst();
+				DotExperiment.init = false;
+			}
+
+			float dataFromSet = experiment.GetRandomPointFromDataSet();
+
+			while(DotExperiment.generateRandAgain(dataFromSet)){
+				dataFromSet = experiment.GetRandomPointFromDataSet();
+			}
+			experiment.currentDataValues["delta"] = dataFromSet;
 			experiment.currentDataValues["leftDot"] = Random.Range(0.5f, 3.5f) * Data.cmToPixel;
-			experiment.currentDataValues["delta"] = experiment.GetRandomPointFromDataSet();
 			experiment.currentDataValues["rightDot"] = (experiment.currentDataValues["delta"] * Data.cmToPixel) + experiment.currentDataValues["leftDot"];
+
 			experiment.currentDataValues["selectedDot"] = -1;
 			experiment.currentDataValues["selectedDotY"] = -1;
 			experiment.currentDataValues["time"] = -1;
+
+			DotExperiment.addToUsedLst(dataFromSet);
+			DotExperiment.updateDictFreq();
+
 		}
 		else isDone = true;
 	}
@@ -297,11 +448,12 @@ public class RSGTryAgain : TryAgain
 public class RSGBlank : DotExpState
 {
 	public override int TimerIndex(){return 5;}
-	public override ExperimentState GetNext()
-	{
+	public override ExperimentState GetNext(){
 		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
 			GUIController.state = ProgramState.INTERMISSION;
 		}
+
+		DotExperiment.printDict();
 		return new RSGInit();
 	}
 	public override bool ShouldDrawLine(){return true;}

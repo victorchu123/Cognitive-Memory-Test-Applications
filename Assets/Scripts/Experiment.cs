@@ -52,6 +52,7 @@ public abstract class Experiment : MonoBehaviour {
 	
 	public virtual void OnUpdate()
 	{
+		// Debug.Log("OnUpdate Ran");
 		if(activeState != null && activeState.TimerIndex() == -2)
 		{
 			data.Save(GetName());
@@ -90,6 +91,8 @@ public abstract class ExperimentState
 	public abstract int TimerIndex();
 	public abstract ExperimentState GetNext();
 	public virtual void Draw(){}
+	public virtual void OnInitialUpdate(){}
+	public virtual void OnUpdate(){}
 	public virtual int GetInput(){return 0;}
 	public virtual bool ShouldDrawLine(){return true;}
 //	public virtual bool GetInput(out Vector2 tapPoint){tapPoint = Vector2.zero; return false;}
