@@ -16,9 +16,10 @@ public class GUIController : MonoBehaviour {
  
 	public static int repeatedNumAllowed;
 	public static bool advanceOption = false;
+	public static bool pauseOption = false;
 	public static string idField = "subjectID_condition_dateRun";
 	public static ProgramState state = ProgramState.SELECTTYPE;
-	public static Experiment experiment{get; protected set;}
+	public static Experiment experiment{get; /*protected*/ set;}
 	
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
@@ -26,6 +27,7 @@ public class GUIController : MonoBehaviour {
 	private GameObject lastPrefab;
 
 	protected readonly string[] advLabels = new string[]{"Auto", "Manual"};
+	protected readonly string[] pauseLabels = new string[]{"Enable", "Disable"};
 
 #if UNITY_EDITOR || UNITY_STANDALONE
 	public string dpiField = "40";
@@ -53,6 +55,11 @@ public class GUIController : MonoBehaviour {
 		advanceOption = GUILayout.SelectionGrid((advanceOption ? 1 : 0), advLabels, 1, "toggle") > 0;
 	}
 
+	public void pauseToggle()
+	{
+		pauseOption = GUILayout.SelectionGrid((pauseOption ? 0 : 1), pauseLabels, 1, "toggle") > 0;
+	}
+
 	void OnGUI()
 	{
 		GUI.skin = skin;
@@ -67,7 +74,6 @@ public class GUIController : MonoBehaviour {
 				currAsset = Instantiate(RSGPrefab);
 				currExperiment = (currAsset as GameObject).GetComponent<Experiment>();
 				lastPrefab = RSGPrefab;
-				DotExperiment.test();
 			}
 			if(GUI.Button(new Rect(Screen.width / 3, Screen.height / 2 - Screen.width / 6, Screen.width /3, Screen.width /3), "Interval Estimation"))
 			{
@@ -144,7 +150,14 @@ public class GUIController : MonoBehaviour {
 			{
 				int tempTrials = Convert.ToInt32(trialsfield);
 				experiment.numberOfTrials = tempTrials;
-				repeatedNumAllowed = experiment.numberOfTrials/11;
+				if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation")
+				{
+					repeatedNumAllowed = experiment.numberOfTrials/11;
+				}
+				else
+				{
+					repeatedNumAllowed = experiment.numberOfTrials/38;
+				}
 				if (repeatedNumAllowed <= 0){
 					repeatedNumAllowed = 1;
 				}
@@ -161,6 +174,7 @@ public class GUIController : MonoBehaviour {
 			experiment.AddlParameters();
 			if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation"){
 				advanceToggle();
+				pauseToggle();
 			}
 			GUILayout.EndHorizontal();
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -202,10 +216,17 @@ public class GUIController : MonoBehaviour {
 			}
 			break;
 		case ProgramState.RUNNING:
+			if (pauseOption){
+				bool transparentButton = GUI.Button(new Rect(0, 0, Screen.width / 8, Screen.height / 8), "", "transparentButton");
+				if(transparentButton){
+					state = ProgramState.PAUSE;
+				}
+			}
 			if(experiment != null)
 				experiment.activeState.Draw();
 			else
 				state = ProgramState.THANKYOU;
+			
 			break;
 
 		case ProgramState.INTERMISSION:
@@ -214,14 +235,15 @@ public class GUIController : MonoBehaviour {
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Quit")){
-				experiment.SaveValues();
-				Destroy(currAsset);
 				state = ProgramState.SELECTTYPE;
+				screenfields.Clear();
+				Destroy(currAsset);	
 			}
 
 			GUILayout.EndHorizontal();
 
-			if (GUILayout.Button("Continue")){
+			if (GUILayout.Button("Next!")){
+				experiment.SaveValues();
 				state = ProgramState.RUNNING;
 			}
 
@@ -230,6 +252,25 @@ public class GUIController : MonoBehaviour {
 			break;
 
 		case ProgramState.PAUSE:
+			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
+			GUILayout.BeginVertical();
+
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Quit")){
+				state = ProgramState.SELECTTYPE;
+				screenfields.Clear();
+				Destroy(currAsset);	
+			}
+
+			GUILayout.EndHorizontal();
+
+			if (GUILayout.Button("Keep Playing")){
+				experiment.SaveValues();
+				state = ProgramState.RUNNING;
+			}
+
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 			break;
 
 		case ProgramState.THANKYOU:

@@ -62,7 +62,19 @@ public class IEInit : DotExpState
 	{
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
 		{
-			experiment.currentDataValues["delta"] = experiment.GetRandomPointFromDataSet();
+			if (DotExperiment.init == true){
+				DotExperiment.initializeDict();
+				DotExperiment.initializeLst();
+				DotExperiment.init = false;
+			}
+
+			float dataFromSet = experiment.GetRandomPointFromDataSet();
+
+			while(DotExperiment.generateRandAgain(dataFromSet)){
+				dataFromSet = experiment.GetRandomPointFromDataSet();
+			}
+
+			experiment.currentDataValues["delta"] = dataFromSet;
 			//Choose a location for the left dot such that both dots will always appear fully on screen.
 			experiment.currentDataValues["leftDot"] = Random.Range(Data.cmToPixel / 2, Screen.width - (experiment.currentDataValues["delta"] * Data.cmToPixel) - Data.cmToPixel / 2);
 			//The location of the right dot is determined by the delta.
@@ -72,6 +84,9 @@ public class IEInit : DotExpState
 			experiment.currentDataValues["selectedDot"] = -1;
 			experiment.currentDataValues["selectedDotY"] = -1;
 			experiment.currentDataValues["time"] = -1;
+
+			DotExperiment.addToUsedLst(dataFromSet);
+			DotExperiment.updateDictFreq();
 		}
 		else isDone = true;
 	}

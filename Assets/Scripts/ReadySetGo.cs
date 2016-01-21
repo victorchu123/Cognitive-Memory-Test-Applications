@@ -16,7 +16,7 @@ public abstract class DotExperiment : Experiment {
 	public static List<float> dataUsed;
 	public static Dictionary<string, int> dataPtFreq;
 
-	public static DotExpState dotState{get; protected set;}
+	public static ExperimentState expState{get; protected set;}
 
 
 	public static float[] getCurrentSet(){
@@ -66,7 +66,7 @@ public abstract class DotExperiment : Experiment {
 	void Start(){
 		Debug.Log("Start Ran");
 
-		if(dotState == null)
+		if(expState == null)
 			init = true;
 
 	}
@@ -104,38 +104,38 @@ public abstract class DotExperiment : Experiment {
 		base.OnUpdate();
 	}
 
-	public static bool isInList(List<float> ls, float datapt)
-	{	
-		if (ls.Count == 0){
-			return false;
-		}
-		ls.Sort();
-		int resultIndex = ls.BinarySearch(datapt);
+	// public static bool isInList(List<float> ls, float datapt)
+	// {	
+	// 	if (ls.Count == 0){
+	// 		return false;
+	// 	}
+	// 	ls.Sort();
+	// 	int resultIndex = ls.BinarySearch(datapt);
 
-		if (resultIndex < 0){
-			return false;
-		}
-		else{
-			return true;
-		}
-	}
+	// 	if (resultIndex < 0){
+	// 		return false;
+	// 	}
+	// 	else{
+	// 		return true;
+	// 	}
+	// }
 
-	//unit test for isInList
-	public static void test()
-	{
-		List<float> l = new List<float>(new float[]{2.0f, 2.4f, 3.0f, 3.4f, 4.0f});
+	// //unit test for isInList
+	// public static void test()
+	// {
+	// 	List<float> l = new List<float>(new float[]{2.0f, 2.4f, 3.0f, 3.4f, 4.0f});
 
-		// for(int i = 0; i < l.Count; i++){
-		// 	Debug.Log(System.Convert.ToString(l[i]));
-		// }
+	// 	// for(int i = 0; i < l.Count; i++){
+	// 	// 	Debug.Log(System.Convert.ToString(l[i]));
+	// 	// }
 
-		if (isInList(l, 2.4f)){
-			Debug.Log("Binary Search works");
-		}
-		else{
-			Debug.Log("Binary Search fails");
-		}
-	}
+	// 	if (isInList(l, 2.4f)){
+	// 		Debug.Log("Binary Search works");
+	// 	}
+	// 	else{
+	// 		Debug.Log("Binary Search fails");
+	// 	}
+	// }
 
 	public static bool generateRandAgain(float leftPt){
 
@@ -299,7 +299,6 @@ public class RSGInit : DotExpState
 
 			DotExperiment.addToUsedLst(dataFromSet);
 			DotExperiment.updateDictFreq();
-
 		}
 		else isDone = true;
 	}
@@ -448,7 +447,8 @@ public class RSGTryAgain : TryAgain
 public class RSGBlank : DotExpState
 {
 	public override int TimerIndex(){return 5;}
-	public override ExperimentState GetNext(){
+	public override ExperimentState GetNext()
+	{
 		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
 			GUIController.state = ProgramState.INTERMISSION;
 		}
