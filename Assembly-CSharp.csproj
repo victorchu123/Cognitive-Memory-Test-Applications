@@ -54,6 +54,7 @@
      <Compile Include="Assets\Scripts\IntervalEstimation.cs" />
      <Compile Include="Assets\Scripts\KBIS.cs" />
      <Compile Include="Assets\Scripts\ReadySetGo.cs" />
+     <Compile Include="Assets\ShowSkin.cs" />
      <None Include="Assets\Vectrosity\What to import!.txt" />
      <None Include="Assets\Vectrosity\Vectrosity 4\Vectrosity 4 Upgrade Guide.txt" />
      <None Include="Assets\Vectrosity\Vectrosity 3 Documentation\Vectrosity Upgrade Guide.txt" />

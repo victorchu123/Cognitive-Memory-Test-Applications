@@ -61,6 +61,7 @@ public abstract class Experiment : MonoBehaviour {
 //			#endif
 //			Application.Quit()
 			Destroy(gameObject);
+			Camera.main.GetComponent<AudioSource>().Play();
 			//Somehow revert everything and go back to the main menu?  Maybe put this in the GUI controller?
 		}
 		else if(activeState == null || activeState.TimerIndex() == -1 || Time.time > timer + (screens[activeState.TimerIndex()].Value / 1000f))

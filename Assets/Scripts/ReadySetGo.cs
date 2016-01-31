@@ -104,39 +104,6 @@ public abstract class DotExperiment : Experiment {
 		base.OnUpdate();
 	}
 
-	// public static bool isInList(List<float> ls, float datapt)
-	// {	
-	// 	if (ls.Count == 0){
-	// 		return false;
-	// 	}
-	// 	ls.Sort();
-	// 	int resultIndex = ls.BinarySearch(datapt);
-
-	// 	if (resultIndex < 0){
-	// 		return false;
-	// 	}
-	// 	else{
-	// 		return true;
-	// 	}
-	// }
-
-	// //unit test for isInList
-	// public static void test()
-	// {
-	// 	List<float> l = new List<float>(new float[]{2.0f, 2.4f, 3.0f, 3.4f, 4.0f});
-
-	// 	// for(int i = 0; i < l.Count; i++){
-	// 	// 	Debug.Log(System.Convert.ToString(l[i]));
-	// 	// }
-
-	// 	if (isInList(l, 2.4f)){
-	// 		Debug.Log("Binary Search works");
-	// 	}
-	// 	else{
-	// 		Debug.Log("Binary Search fails");
-	// 	}
-	// }
-
 	public static bool generateRandAgain(float leftPt){
 
 		int temp = 0; 
@@ -328,7 +295,7 @@ public class RSGShowRight : DotExpState
 
 public abstract class DotExpWaitForInput : DotExpState
 {
-	protected const float lineDistanceCM = 1.5f;
+	protected const float lineDistanceCM = 0.5f;
 	protected static bool allowTryAgain = true;
 	protected static int tryAgainType = 1;
 	protected bool forceNext = false;
@@ -345,7 +312,8 @@ public abstract class DotExpWaitForInput : DotExpState
 			forceNext = true;
 			experiment.currentDataValues["selectedDot"] = InputController.GetTouchPosition().x;
 			experiment.currentDataValues["selectedDotY"] = InputController.GetTouchPosition().y;
-			if(Mathf.Abs(InputController.GetTouchPosition().y - Screen.height * 0.5f) > lineDistanceCM * Data.cmToPixel)
+
+			if(Mathf.Abs(InputController.GetTouchPosition().y - Screen.height * 0.5f) > lineDistanceCM * Data.cmToPixel) //controls how far above line the point will be allowed to be
 			{
 				Debug.Log("Touched outside line");
 				if(allowTryAgain)
@@ -424,7 +392,7 @@ public class RSGShowUserTouch : DotExpState
 	public override ExperimentState GetNext(){return (tryAgain ? (new RSGTryAgain() as ExperimentState) : (new RSGBlank() as ExperimentState));}
 	public override void Draw()
 	{
-		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, Screen.height - experiment.currentDataValues["selectedDotY"] - Data.cmToPixel / 2, Data.cmToPixel, Data.cmToPixel),
+		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
 		                 experiment.circleTex);
 	}
 }
@@ -449,7 +417,9 @@ public class RSGBlank : DotExpState
 	public override int TimerIndex(){return 5;}
 	public override ExperimentState GetNext()
 	{
+
 		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+			GUIController.intermissionCheck = true;
 			GUIController.state = ProgramState.INTERMISSION;
 		}
 

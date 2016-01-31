@@ -11,15 +11,16 @@ public class GUIController : MonoBehaviour {
 	public GameObject KBISPrefab;
 	private GameObject currAsset;
 	public Material mat;
-	public Texture buttonTex;
+	public Texture smileyFace;
 	public Experiment currExperiment = null;
- 
+
 	public static int repeatedNumAllowed;
+	public static bool intermissionCheck;
 	public static bool advanceOption = false;
 	public static bool pauseOption = false;
 	public static string idField = "subjectID_condition_dateRun";
 	public static ProgramState state = ProgramState.SELECTTYPE;
-	public static Experiment experiment{get; /*protected*/ set;}
+	public static Experiment experiment{get; protected set;}
 	
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
@@ -57,7 +58,7 @@ public class GUIController : MonoBehaviour {
 
 	public void pauseToggle()
 	{
-		pauseOption = GUILayout.SelectionGrid((pauseOption ? 0 : 1), pauseLabels, 1, "toggle") > 0;
+		pauseOption = GUILayout.SelectionGrid((pauseOption ? 1 : 0), pauseLabels, 1, "toggle") > 0;
 	}
 
 	void OnGUI()
@@ -113,6 +114,7 @@ public class GUIController : MonoBehaviour {
 			if(GUILayout.Button("Back","defaultButton", new GUILayoutOption[] { GUILayout.Width(80), GUILayout.Height(50)}))
 			{
 				Destroy(currAsset);
+				currExperiment = null;
 				state = ProgramState.SELECTTYPE;
 			}
 
@@ -173,8 +175,14 @@ public class GUIController : MonoBehaviour {
 			GUILayout.BeginHorizontal();
 			experiment.AddlParameters();
 			if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation"){
+				GUILayout.BeginVertical();
+				GUILayout.Label("Advance Screen:", "configLabel");
 				advanceToggle();
+				GUILayout.EndVertical();
+				GUILayout.BeginVertical();
+				GUILayout.Label("Invisible Pause:", "configLabel");
 				pauseToggle();
+				GUILayout.EndVertical();
 			}
 			GUILayout.EndHorizontal();
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -209,6 +217,7 @@ public class GUIController : MonoBehaviour {
 			GUILayout.EndArea();
 			break;
 		case ProgramState.WAITINGTOBEGIN:
+			//start screen for experiment
 			bool startButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "", "startButton");
 			if(startButton)
 			{
@@ -216,10 +225,12 @@ public class GUIController : MonoBehaviour {
 			}
 			break;
 		case ProgramState.RUNNING:
-			if (pauseOption){
+			//when the experiment is running
+			if (!pauseOption){
 				bool transparentButton = GUI.Button(new Rect(0, 0, Screen.width / 8, Screen.height / 8), "", "transparentButton");
 				if(transparentButton){
-					state = ProgramState.PAUSE;
+					intermissionCheck = false;
+					state = ProgramState.INTERMISSION;
 				}
 			}
 			if(experiment != null)
@@ -230,57 +241,51 @@ public class GUIController : MonoBehaviour {
 			break;
 
 		case ProgramState.INTERMISSION:
+			//the menu in between experiments if option is chosen
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
-			GUILayout.BeginVertical();
 
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Quit")){
-				state = ProgramState.SELECTTYPE;
+			bool quitButton;
+			bool nextButton;
+
+			if (intermissionCheck){
+				int quit_Height_Width = Screen.width / 48 - Screen.height / 96;
+				quitButton = GUI.Button(new Rect(quit_Height_Width, quit_Height_Width, Screen.height / 4, Screen.height / 8), "Quit");
+				nextButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 3, Screen.height / 2, Screen.height / 4), "Next!");
+			}
+			else
+			{
+				quitButton = GUI.Button(new Rect(Screen.width - (Screen.width / 2 - Screen.height / 16), Screen.height / 3, Screen.height / 2, Screen.height / 4), "Quit");
+				nextButton = GUI.Button(new Rect(Screen.width / 8 - Screen.height / 16 , Screen.height / 3, Screen.height / 2, Screen.height / 4), "Keep Playing");
+			}
+			
+			if (quitButton)
+			{
+				experiment.SaveValues();
 				screenfields.Clear();
 				Destroy(currAsset);	
+				currExperiment = null;
+				state = ProgramState.SELECTTYPE;
 			}
 
-			GUILayout.EndHorizontal();
-
-			if (GUILayout.Button("Next!")){
-				experiment.SaveValues();
+			if (nextButton){
 				state = ProgramState.RUNNING;
 			}
 
-			GUILayout.EndVertical();
-			GUILayout.EndArea();
-			break;
-
-		case ProgramState.PAUSE:
-			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
-			GUILayout.BeginVertical();
-
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Quit")){
-				state = ProgramState.SELECTTYPE;
-				screenfields.Clear();
-				Destroy(currAsset);	
-			}
-
-			GUILayout.EndHorizontal();
-
-			if (GUILayout.Button("Keep Playing")){
-				experiment.SaveValues();
-				state = ProgramState.RUNNING;
-			}
-
-			GUILayout.EndVertical();
 			GUILayout.EndArea();
 			break;
 
 		case ProgramState.THANKYOU:
+			//thank you screen after experiments
+	
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
 			GUILayout.BeginVertical();
 
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height/3), "Thank you!", "thanks");
 
-			bool continueButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 4, Screen.height / 2, Screen.height / 2), "Continue");
+			GUI.DrawTexture(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 3 - Screen.height / 12, Screen.height / 2, Screen.height / 4), smileyFace);
+
+			bool continueButton = GUI.Button(new Rect(Screen.width / 2 - Screen.height / 4, Screen.height / 2, Screen.height / 2, Screen.height / 4), "Continue");
 			if (continueButton){
 				state = ProgramState.COMPLETE;
 			}
@@ -289,6 +294,7 @@ public class GUIController : MonoBehaviour {
 
 			break;
 		case ProgramState.COMPLETE:
+			//complete screen after experiment is complete
 			GUI.Label(new Rect(0, 0, Screen.width, Screen.height / 2 - Screen.width / 8), "Experiment complete\nWhat would you like to do now?", "endText");
 			if(GUI.Button(new Rect(0, Screen.height / 2 - Screen.width / 8, Screen.width /4, Screen.width /4), "Perform the same experiment\nwith the same parameters"))
 			{
@@ -332,14 +338,10 @@ public class GUIController : MonoBehaviour {
 				experiment.OnUpdate();
 		}
 	}
-
-	// void OnMouseOver(){
-	// 	st
-
-	// }
 		
 	protected void OnPostRender()
 	{
+		//draws line for READYSETGO and INTERVAL ESTIMATION
 		if(state == ProgramState.RUNNING)
 		{
 			GL.PushMatrix();
@@ -349,18 +351,12 @@ public class GUIController : MonoBehaviour {
 			GL.Color (Color.black);
 			experiment.DrawLine();
 			GL.End ();
-			GL.PopMatrix();
-			
-		// 	myLine.Draw();
+			GL.PopMatrix();	
 		}
-		// else if(state == ProgramState.COMPLETE)
-		// {
-		// 	VectorLine.Destroy(ref myLine);
-		// }
 	}
 }
 
 public enum ProgramState
 {
-	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, INTERMISSION, PAUSE, THANKYOU, COMPLETE
+	SELECTTYPE, CONFIG, WAITINGTOBEGIN, RUNNING, INTERMISSION, THANKYOU, COMPLETE
 }

@@ -48,10 +48,6 @@ public class IntervalEstimation : DotExperiment {
 }
 
 #region States
-//public abstract class IEState : ExperimentState
-//{
-//	public IntervalEstimation experiment {get{return (GUIController.experiment as IntervalEstimation);}}
-//}
 
 public class IEInit : DotExpState
 {
@@ -98,9 +94,9 @@ public class IEShowInterval : DotExpState
 	public override ExperimentState GetNext(){return new IEBlank1();}
 	public override void Draw()
 	{
-		GUI.DrawTexture (new Rect (experiment.currentDataValues["leftDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
+		GUI.DrawTexture (new Rect (experiment.currentDataValues["leftDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2, Data.cmToPixel, Data.cmToPixel),
 		                 experiment.circleTex);
-		GUI.DrawTexture (new Rect (experiment.currentDataValues["rightDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
+		GUI.DrawTexture (new Rect (experiment.currentDataValues["rightDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2, Data.cmToPixel, Data.cmToPixel),
 		                 experiment.circleTex);
 	}
 }
@@ -120,9 +116,13 @@ public class IEBlank2 : DotExpState
 	public override int TimerIndex(){return 5;}
 	public override ExperimentState GetNext()
 	{
+
 		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+			GUIController.intermissionCheck = true;
 			GUIController.state = ProgramState.INTERMISSION;
 		}
+		
+		DotExperiment.printDict();
 		return new IEInit();
 	}
 	public override bool ShouldDrawLine(){return true;}
@@ -159,7 +159,7 @@ public class IEShowUserTouch : DotExpState
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["promptDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
 		                 experiment.circleTex);
-		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, Screen.height - experiment.currentDataValues["selectedDotY"] - Data.cmToPixel / 2, Data.cmToPixel, Data.cmToPixel),
+		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
 		                 experiment.circleTex);
 	}
 }
