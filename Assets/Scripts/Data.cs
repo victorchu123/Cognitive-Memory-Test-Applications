@@ -60,7 +60,7 @@ public class Data {
 			outputString += "\n";
 		}
 			
-		using (FileStream fs = File.Create(Application.persistentDataPath + "/Experiment_" + type + "_" +
+		using (FileStream fs = File.Create(Application.persistentDataPath + "/Experiment_" + type + "_" + GUIController.idField + "_" +
 											timeID.Month + "-" + timeID.Day + "-" + timeID.Year + "_" + timeID.Hour + "-" + timeID.Minute + "-" + timeID.Second + ".csv"))
 		{
 			System.Byte[] info = new UTF8Encoding(true).GetBytes(outputString);

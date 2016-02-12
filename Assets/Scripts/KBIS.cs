@@ -9,6 +9,12 @@ public class KBIS : Experiment {
 //	private string firstScreenLineField = "0.5";
 	private readonly float[] possibleLineLengthMults = new float[]{0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.9f, 0.95f, 1f, 1.05f, 1.1f, 1.4f, 1.45f, 1.5f, 1.55f, 1.6f};
 	
+	public override void textureToggle(){}
+
+	public override void advanceToggle(){}
+
+	public override void pauseToggle(){}
+
 	void Awake()
 	{
 		if(!LoadValues("KBISValues"))
@@ -177,7 +183,19 @@ public class KBISInit : KBISState
 	{
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
 		{
-			experiment.currentDataValues["targetPoint"] = experiment.GetRandomPointFromDataSet();
+			Debug.Log(System.Convert.ToString(Experiment.init));
+			if (Experiment.init == true){
+				float[] temp = new float[1];
+				experiment.initializeDict(temp);
+				Experiment.init = false;
+			}
+
+			float dataFromSet = experiment.GetRandomPointFromDataSet();
+
+			while(experiment.generateRandAgain(dataFromSet)){
+				dataFromSet = experiment.GetRandomPointFromDataSet();
+			}
+			experiment.currentDataValues["targetPoint"] = dataFromSet;
 			experiment.currentDataValues["promptLineLength"] = experiment.GetRandomLineLengthFromDataSet();
 			//Should generate a line location that's within one tick's width of the edge of the screen, and should always
 			//allow the entire line to fit.
@@ -190,6 +208,9 @@ public class KBISInit : KBISState
 			experiment.currentDataValues["selectedPoint"] = -1;
 			experiment.currentDataValues["selectedPointY"] = -1;
 			experiment.currentDataValues["time"] = -1;
+
+			// DotExperiment.addToUsedLst(dataFromSet);
+			experiment.updateDictFreq(dataFromSet);
 		}
 		else isDone = true;
 	}

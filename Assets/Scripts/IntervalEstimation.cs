@@ -58,15 +58,21 @@ public class IEInit : DotExpState
 	{
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
 		{
-			if (DotExperiment.init == true){
-				DotExperiment.initializeDict();
-				DotExperiment.initializeLst();
-				DotExperiment.init = false;
+			if (Experiment.init == true){
+				float[] currSet;
+				if (experiment.useLongDataSet){
+					currSet = experiment.longDataSet;
+				}else{
+					currSet = experiment.shortDataSet;
+				}
+				experiment.initializeDict(currSet);
+				// DotExperiment.initializeLst();
+				Experiment.init = false;
 			}
 
 			float dataFromSet = experiment.GetRandomPointFromDataSet();
 
-			while(DotExperiment.generateRandAgain(dataFromSet)){
+			while(experiment.generateRandAgain(dataFromSet)){
 				dataFromSet = experiment.GetRandomPointFromDataSet();
 			}
 
@@ -81,8 +87,8 @@ public class IEInit : DotExpState
 			experiment.currentDataValues["selectedDotY"] = -1;
 			experiment.currentDataValues["time"] = -1;
 
-			DotExperiment.addToUsedLst(dataFromSet);
-			DotExperiment.updateDictFreq();
+			// DotExperiment.addToUsedLst(dataFromSet);
+			experiment.updateDictFreq(dataFromSet);
 		}
 		else isDone = true;
 	}
@@ -95,9 +101,9 @@ public class IEShowInterval : DotExpState
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["leftDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["rightDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 
@@ -116,13 +122,12 @@ public class IEBlank2 : DotExpState
 	public override int TimerIndex(){return 5;}
 	public override ExperimentState GetNext()
 	{
-
-		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+		if (DotExperiment.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
 			GUIController.intermissionCheck = true;
 			GUIController.state = ProgramState.INTERMISSION;
 		}
 		
-		DotExperiment.printDict();
+		experiment.printDict();
 		return new IEInit();
 	}
 	public override bool ShouldDrawLine(){return true;}
@@ -142,7 +147,7 @@ public class IEWaitForInput : DotExpWaitForInput
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["promptDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 
@@ -158,9 +163,9 @@ public class IEShowUserTouch : DotExpState
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["promptDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 

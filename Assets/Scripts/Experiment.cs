@@ -8,10 +8,13 @@ public abstract class Experiment : MonoBehaviour {
 	public int numberOfTrials;
 	public List<BasicKeyValuePair<string, float>> screens;
 	public Dictionary<string, float> currentDataValues;
-	
 	public int currentTrial = 0;
-	
-	public Data data{get; protected set;}
+	private int dictCount = 0;
+	public static bool init = true; 
+	public static Data data{get; protected set;}
+
+	public List<float> dataUsed;
+	public Dictionary<string, int> dataPtFreq;
 	
 	protected float timer;
 	
@@ -70,21 +73,76 @@ public abstract class Experiment : MonoBehaviour {
 			activeState = (activeState == null ? GetFirstState() : activeState.GetNext());
 		}
 	}
-	
-	/*protected void ChangeState()
+
+	public bool generateRandAgain(float leftPt)
 	{
-		timer = Time.time;
-		activeState = OnStateChange();
+		int temp; 
+
+		if(dataPtFreq != null){
+			if (dataPtFreq.TryGetValue(System.Convert.ToString(leftPt), out temp)){
+				int num = dataPtFreq[System.Convert.ToString(leftPt)];
+				if (GUIController.repeatedNumAllowed <= num)
+					return true;
+				else
+					return false;
+			}
+			else{
+				return false;
+			}
+	 }
+	 else{
+	 	return false;
+	 }
+
 	}
-	
-	public abstract int OnStateChange();
-	public abstract void Draw();*/
+
+	public void initializeDict(float[] dataSet)
+	{
+		dataPtFreq = new Dictionary<string, int>();
+		Debug.Log("InitializeDict Ran");
+		float[] currentSet = dataSet;
+
+		foreach(float datapoint in currentSet){
+			// Debug.Log(System.Convert.ToString(datapoint));
+			dataPtFreq.Add(System.Convert.ToString(datapoint), 0);
+		}
+	}
+
+	public void printDict(){
+		string output = "Dictionary Iteration #" + System.Convert.ToString(dictCount) +  ": ----------------------------";
+		Debug.Log(output);
+		foreach (var value in dataPtFreq){
+			Debug.Log(System.Convert.ToString(value));
+		}
+	}
+
+	public void updateDictFreq(float usedPoint)
+	{
+		int temp;
+		
+		if(dataPtFreq != null){
+			if (dataPtFreq.TryGetValue(System.Convert.ToString(usedPoint), out temp)){
+				Debug.Log("Entry already in dictionary.");
+				dataPtFreq[System.Convert.ToString(usedPoint)]++;
+			}
+			else{
+				Debug.Log("Added entry to dictionary.");
+				dataPtFreq.Add(System.Convert.ToString(usedPoint), 1);
+			}
+			printDict();
+			dictCount++;
+		}
+	}
+
 	protected abstract ExperimentState GetFirstState();
 	public abstract string GetName();
 	public abstract void SaveValues();
 	public abstract void AddlParameters();
 	public abstract float GetRandomPointFromDataSet();
 	public abstract void DrawLine();
+	public abstract void textureToggle();
+	public abstract void advanceToggle();
+	public abstract void pauseToggle();
 }
 
 public abstract class ExperimentState

@@ -4,28 +4,39 @@ using System.Collections.Generic;
 
 public abstract class DotExperiment : Experiment {
 	public Texture2D circleTex;
+	public Texture2D duckTex;
 	public DotExpState currDotState = null;
-
-	public static bool useLongDataSet;
-	public static bool init = false; 
-	private static int dictCount = 0;
+	public bool useLongDataSet;
+	public float[] shortDataSet = new float[]{2.0f, 2.4f, 2.8f, 3.2f, 3.6f, 4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f};
+	public float[] longDataSet = new float[]{4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f, 6.4f, 6.8f, 7.2f, 7.6f, 8.0f};
+	public static bool advanceOption = false;
+	public static bool pauseOption = false;
+	public static bool textureOption = false; 
+	
 	protected readonly string[] dataSetLabels = new string[]{"Use short data set", "Use long data set"};
-	public static float[] shortDataSet = new float[]{2.0f, 2.4f, 2.8f, 3.2f, 3.6f, 4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f};
-	public static float[] longDataSet = new float[]{4.0f, 4.4f, 4.8f, 5.2f, 5.6f, 6.0f, 6.4f, 6.8f, 7.2f, 7.6f, 8.0f};
-
-	public static List<float> dataUsed;
-	public static Dictionary<string, int> dataPtFreq;
+	protected readonly string[] advLabels = new string[]{"Auto", "Manual"};
+	protected readonly string[] pauseLabels = new string[]{"Enable", "Disable"};
+	protected readonly string[] texLabels = new string[]{"Duck", "Dot"};
 
 	public static ExperimentState expState{get; protected set;}
 
+	public override void textureToggle()
+	{
+		textureOption = GUILayout.SelectionGrid((textureOption ? 1 : 0), texLabels, 1, "toggle") > 0;
+	}
 
-	public static float[] getCurrentSet(){
-		if(useLongDataSet){
-			return longDataSet;
-		}
-		else{
-			return shortDataSet;
-		}
+	public override void advanceToggle()
+	{
+		advanceOption = GUILayout.SelectionGrid((advanceOption ? 1 : 0), advLabels, 1, "toggle") > 0;
+	}
+
+	public override void pauseToggle()
+	{
+		pauseOption = GUILayout.SelectionGrid((pauseOption ? 1 : 0), pauseLabels, 1, "toggle") > 0;
+	}
+
+	public Texture getTexture(){
+		return (textureOption ? circleTex : duckTex);
 	}
 
 	public override float GetRandomPointFromDataSet()
@@ -104,80 +115,6 @@ public abstract class DotExperiment : Experiment {
 		base.OnUpdate();
 	}
 
-	public static bool generateRandAgain(float leftPt){
-
-		int temp = 0; 
-
-		if (dataPtFreq.TryGetValue(System.Convert.ToString(leftPt), out temp)){
-			int num = dataPtFreq[System.Convert.ToString(leftPt)];
-			if (GUIController.repeatedNumAllowed <= num){
-				return true;
-			}
-
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
-	}
-
-	public static void initializeDict()
-	{
-		dataPtFreq = new Dictionary<string, int>();
-		Debug.Log("InitializeDict Ran");
-		float[] currentSet = DotExperiment.getCurrentSet();
-
-		foreach(float datapoint in currentSet){
-			// Debug.Log(System.Convert.ToString(datapoint));
-			dataPtFreq.Add(System.Convert.ToString(datapoint), 0);
-		}
-
-	}
-
-	public static void updateDictFreq(){
-		
-		List<float> itemsToRemove = new List<float>();
-
-		foreach (float usedPoint in dataUsed){
-			dataPtFreq[System.Convert.ToString(usedPoint)]++;
-			itemsToRemove.Add(usedPoint);
-		}
-
-		foreach(float value in itemsToRemove){
-			dataUsed.Remove(value);
-		}
-		
-		printDict();
-	}
-
-	public static void printDict(){
-
-		string output = "Dictionary Iteration #" + System.Convert.ToString(dictCount) +  ": ----------------------------";
-		Debug.Log(output);
-		foreach (var value in dataPtFreq){
-			Debug.Log(System.Convert.ToString(value));
-		}
-		dictCount++;
-	
-	}
-
-	public static void initializeLst(){
-		dataUsed = new List<float>();
-	}
-
-	public static void addToUsedLst(float usedPt){
-		dataUsed.Add(usedPt);
-	}
-
-	public static void printLst(){
-		Debug.Log("Current Used DataPoint List:----------------------------");
-		foreach (var value in dataUsed){
-			Debug.Log(System.Convert.ToString(value));
-		}
-	}
-
 }
 
 public class ReadySetGo : DotExperiment {
@@ -205,7 +142,6 @@ public class ReadySetGo : DotExperiment {
 		SaveValues("RSGValues");
 		
 		data = new Data(new Dictionary<string, string>(){
-							{"subjectID", GUIController.idField},
 							{"stimScreen1",screens[0].Value.ToString()}, {"stimScreen2",screens[1].Value.ToString()},
 							{"respScreen",screens[2].Value.ToString()}, {"dispScreen",screens[3].Value.ToString()},
 							{"delay",screens[5].Value.ToString()}, {"blockLength",numberOfTrials.ToString()},
@@ -245,15 +181,20 @@ public class RSGInit : DotExpState
 	{	
 		if(++experiment.currentTrial <= experiment.numberOfTrials)
 		{	
-			if (DotExperiment.init == true){
-				DotExperiment.initializeDict();
-				DotExperiment.initializeLst();
-				DotExperiment.init = false;
+			if (Experiment.init == true){
+				float[] currSet;
+				if (experiment.useLongDataSet){
+					currSet = experiment.longDataSet;
+				}else{
+					currSet = experiment.shortDataSet;
+				}
+				experiment.initializeDict(currSet);
+				Experiment.init = false;
 			}
 
 			float dataFromSet = experiment.GetRandomPointFromDataSet();
 
-			while(DotExperiment.generateRandAgain(dataFromSet)){
+			while(experiment.generateRandAgain(dataFromSet)){
 				dataFromSet = experiment.GetRandomPointFromDataSet();
 			}
 			experiment.currentDataValues["delta"] = dataFromSet;
@@ -264,8 +205,7 @@ public class RSGInit : DotExpState
 			experiment.currentDataValues["selectedDotY"] = -1;
 			experiment.currentDataValues["time"] = -1;
 
-			DotExperiment.addToUsedLst(dataFromSet);
-			DotExperiment.updateDictFreq();
+			experiment.updateDictFreq(dataFromSet);
 		}
 		else isDone = true;
 	}
@@ -278,7 +218,7 @@ public class RSGShowLeft : DotExpState
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["leftDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 
@@ -289,7 +229,7 @@ public class RSGShowRight : DotExpState
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["rightDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 
@@ -393,7 +333,7 @@ public class RSGShowUserTouch : DotExpState
 	public override void Draw()
 	{
 		GUI.DrawTexture (new Rect (experiment.currentDataValues["selectedDot"] - Data.cmToPixel / 2, (Screen.height - Data.cmToPixel) / 2f, Data.cmToPixel, Data.cmToPixel),
-		                 experiment.circleTex);
+		                 experiment.getTexture());
 	}
 }
 
@@ -418,12 +358,12 @@ public class RSGBlank : DotExpState
 	public override ExperimentState GetNext()
 	{
 
-		if (GUIController.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
+		if (DotExperiment.advanceOption && experiment.currentTrial < experiment.numberOfTrials){
 			GUIController.intermissionCheck = true;
 			GUIController.state = ProgramState.INTERMISSION;
 		}
 
-		DotExperiment.printDict();
+		experiment.printDict();
 		return new RSGInit();
 	}
 	public override bool ShouldDrawLine(){return true;}

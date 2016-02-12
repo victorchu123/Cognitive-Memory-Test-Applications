@@ -2,7 +2,6 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Vectrosity;
 
 public class GUIController : MonoBehaviour {
 	public GUISkin skin;
@@ -13,26 +12,27 @@ public class GUIController : MonoBehaviour {
 	public Material mat;
 	public Texture smileyFace;
 	public Experiment currExperiment = null;
+	public Data data{get; protected set;}
+	public bool changeOption = false;
 
 	public static int repeatedNumAllowed;
 	public static bool intermissionCheck;
-	public static bool advanceOption = false;
-	public static bool pauseOption = false;
+	
 	public static string idField = "subjectID_condition_dateRun";
 	public static ProgramState state = ProgramState.SELECTTYPE;
 	public static Experiment experiment{get; protected set;}
 	
 	private List<string> screenfields = new List<string>();
 	private string trialsfield;
-	private VectorLine myLine;
 	private GameObject lastPrefab;
-
-	protected readonly string[] advLabels = new string[]{"Auto", "Manual"};
-	protected readonly string[] pauseLabels = new string[]{"Enable", "Disable"};
 
 #if UNITY_EDITOR || UNITY_STANDALONE
 	public string dpiField = "40";
 #endif
+
+	public void changeToggle(){
+		changeOption = GUILayout.Toggle(false, "Change All", "toggle");
+	}
 
 	void Awake()
 	{
@@ -42,23 +42,6 @@ public class GUIController : MonoBehaviour {
 		Data.cmToPixel = Screen.dpi * 0.393701f;
 #endif
 		
-	}
-
-	public void createVLine()
-	{
-			Vector2[] linePoints = {new Vector2(0, Screen.height/2), new Vector2(Screen.width,Screen.height/2)};
-			myLine = new VectorLine("expLine", linePoints, null, 4.0f);
-			myLine.color = Color.black;
-	}
-
-	public void advanceToggle()
-	{
-		advanceOption = GUILayout.SelectionGrid((advanceOption ? 1 : 0), advLabels, 1, "toggle") > 0;
-	}
-
-	public void pauseToggle()
-	{
-		pauseOption = GUILayout.SelectionGrid((pauseOption ? 1 : 0), pauseLabels, 1, "toggle") > 0;
 	}
 
 	void OnGUI()
@@ -104,6 +87,10 @@ public class GUIController : MonoBehaviour {
 			break;
 		case ProgramState.CONFIG:
 
+			bool isNull = false;
+
+			bool isDotExp = (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation");
+
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height), "", "box");
 			float tempScrnValue;
 			GUILayout.BeginVertical();
@@ -115,11 +102,19 @@ public class GUIController : MonoBehaviour {
 			{
 				Destroy(currAsset);
 				currExperiment = null;
+				lastPrefab = null;
 				state = ProgramState.SELECTTYPE;
 			}
 
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperCenter;
-			GUILayout.Label(currExperiment.GetName());
+
+			try
+			{
+				GUILayout.Label(currExperiment.GetName());
+			}
+			catch(Exception e){
+				isNull = true;
+			}
 
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
@@ -127,7 +122,22 @@ public class GUIController : MonoBehaviour {
 			GUILayout.BeginVertical();
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperLeft;
 
+			// if(GUILayout.Button("Save test", "defaultButton"))
+			// {
+			// 	experiment.SaveValues();
+			// 	state = ProgramState.WAITINGTOBEGIN;
+			// }
+
+			GUILayout.BeginHorizontal();
 			GUILayout.Label("Screen durations (ms):");
+			// changeToggle();
+
+			// if (changeOption == false){
+		
+			// 	GUILayout.TextField("3000");
+			// }
+
+			GUILayout.EndHorizontal();
 			for(int i = 0; i < experiment.screens.Count; i++)
 			{
 				GUILayout.BeginHorizontal();
@@ -152,7 +162,7 @@ public class GUIController : MonoBehaviour {
 			{
 				int tempTrials = Convert.ToInt32(trialsfield);
 				experiment.numberOfTrials = tempTrials;
-				if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation")
+				if (isNull == false && isDotExp)
 				{
 					repeatedNumAllowed = experiment.numberOfTrials/11;
 				}
@@ -174,14 +184,18 @@ public class GUIController : MonoBehaviour {
 			GUILayout.EndHorizontal();
 			GUILayout.BeginHorizontal();
 			experiment.AddlParameters();
-			if (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation"){
+			if (isNull == false && isDotExp){
 				GUILayout.BeginVertical();
 				GUILayout.Label("Advance Screen:", "configLabel");
-				advanceToggle();
+				experiment.advanceToggle();
 				GUILayout.EndVertical();
 				GUILayout.BeginVertical();
 				GUILayout.Label("Invisible Pause:", "configLabel");
-				pauseToggle();
+				experiment.pauseToggle();
+				GUILayout.EndVertical();
+				GUILayout.BeginVertical();
+				GUILayout.Label("Texture:", "configLabel");
+				experiment.textureToggle();
 				GUILayout.EndVertical();
 			}
 			GUILayout.EndHorizontal();
@@ -226,7 +240,7 @@ public class GUIController : MonoBehaviour {
 			break;
 		case ProgramState.RUNNING:
 			//when the experiment is running
-			if (!pauseOption){
+			if (!(DotExperiment.pauseOption) && (currExperiment.GetName() == "ReadySetGo" || currExperiment.GetName() == "IntervalEstimation")){
 				bool transparentButton = GUI.Button(new Rect(0, 0, Screen.width / 8, Screen.height / 8), "", "transparentButton");
 				if(transparentButton){
 					intermissionCheck = false;
@@ -260,11 +274,11 @@ public class GUIController : MonoBehaviour {
 			
 			if (quitButton)
 			{
-				experiment.SaveValues();
-				screenfields.Clear();
+				Experiment.data.Save(experiment.GetName());
 				Destroy(currAsset);	
 				currExperiment = null;
 				state = ProgramState.SELECTTYPE;
+				screenfields.Clear();
 			}
 
 			if (nextButton){
