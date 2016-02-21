@@ -23,7 +23,9 @@ public class GUIController : MonoBehaviour {
 	public static Experiment experiment{get; protected set;}
 	
 	private List<string> screenfields = new List<string>();
-	private string trialsfield;
+	private string trialsfield = "";
+	private string changeAllField = "3000";
+	private int changeAllVal;
 	private GameObject lastPrefab;
 
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -110,7 +112,7 @@ public class GUIController : MonoBehaviour {
 
 			try
 			{
-				GUILayout.Label(currExperiment.GetName());
+				GUILayout.Label(currExperiment.GetName(), "NameLabel");
 			}
 			catch(Exception e){
 				isNull = true;
@@ -130,12 +132,30 @@ public class GUIController : MonoBehaviour {
 
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Screen durations (ms):");
-			// changeToggle();
+			
 
-			// if (changeOption == false){
-		
-			// 	GUILayout.TextField("3000");
-			// }
+			//change all dictionary screen durations to input value
+			if(GUILayout.Button("Change All", "changeAll", GUILayout.ExpandWidth(false))){
+				try{
+					changeAllVal = Convert.ToInt32(changeAllField); 
+					for (int i = 0; i < screenfields.Count; i++){
+						screenfields[i] = Convert.ToString(changeAllVal);
+						// Debug.Log(Convert.ToString(screenfields[i]));
+					}
+				}
+				catch(Exception e){
+				}
+			}
+
+			try{
+				changeAllVal = Convert.ToInt32(changeAllField); 
+			}
+			catch(Exception e){
+				GUI.color = Color.red;
+			}
+
+			changeAllField = GUILayout.TextField(changeAllField);
+			GUI.color = Color.white;
 
 			GUILayout.EndHorizontal();
 			for(int i = 0; i < experiment.screens.Count; i++)
