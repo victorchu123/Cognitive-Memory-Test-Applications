@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.IO;
+using System;
 
 public abstract class Experiment : MonoBehaviour {
 	public int numberOfTrials;
@@ -74,13 +75,14 @@ public abstract class Experiment : MonoBehaviour {
 		}
 	}
 
-	public bool generateRandAgain(float leftPt)
+	public bool generateRandAgain(float deltaPt)
 	{
 		int temp; 
+		double roundedPt = Math.Round(deltaPt, 3);
 
 		if(dataPtFreq != null){
-			if (dataPtFreq.TryGetValue(System.Convert.ToString(leftPt), out temp)){
-				int num = dataPtFreq[System.Convert.ToString(leftPt)];
+			if (dataPtFreq.TryGetValue(System.Convert.ToString(roundedPt), out temp)){
+				int num = dataPtFreq[System.Convert.ToString(roundedPt)];
 				if (GUIController.repeatedNumAllowed <= num)
 					return true;
 				else
@@ -119,15 +121,16 @@ public abstract class Experiment : MonoBehaviour {
 	public void updateDictFreq(float usedPoint)
 	{
 		int temp;
-		
+		double roundedPt = Math.Round(usedPoint, 3);
+	
 		if(dataPtFreq != null){
-			if (dataPtFreq.TryGetValue(System.Convert.ToString(usedPoint), out temp)){
+			if (dataPtFreq.TryGetValue(System.Convert.ToString(roundedPt), out temp)){
 				Debug.Log("Entry already in dictionary.");
-				dataPtFreq[System.Convert.ToString(usedPoint)]++;
+				dataPtFreq[System.Convert.ToString(roundedPt)] = dataPtFreq[System.Convert.ToString(roundedPt)] + 1;
 			}
 			else{
 				Debug.Log("Added entry to dictionary.");
-				dataPtFreq.Add(System.Convert.ToString(usedPoint), 1);
+				dataPtFreq.Add(System.Convert.ToString(roundedPt), 1);
 			}
 			printDict();
 			dictCount++;

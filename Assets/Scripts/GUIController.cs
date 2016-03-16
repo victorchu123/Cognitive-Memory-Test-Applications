@@ -124,11 +124,12 @@ public class GUIController : MonoBehaviour {
 			GUILayout.BeginVertical();
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperLeft;
 
-			// if(GUILayout.Button("Save test", "defaultButton"))
-			// {
-			// 	experiment.SaveValues();
-			// 	state = ProgramState.WAITINGTOBEGIN;
-			// }
+			// uncomment for testing data output
+			if(GUILayout.Button("Save test", "defaultButton"))
+			{
+				experiment.SaveValues();
+				state = ProgramState.WAITINGTOBEGIN;
+			}
 
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Screen durations (ms):");
@@ -198,6 +199,7 @@ public class GUIController : MonoBehaviour {
 			{
 				GUI.color = Color.red;
 			}
+
 			trialsfield = GUILayout.TextField(trialsfield);
 			GUI.color = Color.white;
 
@@ -334,6 +336,7 @@ public class GUIController : MonoBehaviour {
 			{
 				// createVLine();
 				experiment = (Instantiate(lastPrefab) as GameObject).GetComponent<Experiment>();
+				Experiment.init = true;
 				experiment.SaveValues();
 				state = ProgramState.WAITINGTOBEGIN;
 			}
@@ -341,6 +344,7 @@ public class GUIController : MonoBehaviour {
 			{
 				// createVLine();
 				experiment = (Instantiate(lastPrefab) as GameObject).GetComponent<Experiment>();
+				Experiment.init = true;
 				state = ProgramState.CONFIG;
 				screenfields.Clear();
 				for(int i = 0; i < experiment.screens.Count; i++)
