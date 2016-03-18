@@ -125,11 +125,11 @@ public class GUIController : MonoBehaviour {
 			GUI.skin.GetStyle("Label").alignment = TextAnchor.UpperLeft;
 
 			// uncomment for testing data output
-			if(GUILayout.Button("Save test", "defaultButton"))
-			{
-				experiment.SaveValues();
-				state = ProgramState.WAITINGTOBEGIN;
-			}
+			// if(GUILayout.Button("Save test", "defaultButton"))
+			// {
+			// 	experiment.SaveValues();
+			// 	state = ProgramState.WAITINGTOBEGIN;
+			// }
 
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Screen durations (ms):");
