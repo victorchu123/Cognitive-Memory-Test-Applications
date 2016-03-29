@@ -75,6 +75,9 @@ public abstract class Experiment : MonoBehaviour {
 		}
 	}
 
+	/* checks if the current datapoint can be used in new trial; if it has reached its maximum number of unique uses 
+	then we pick a new random datapoint */
+
 	public bool generateRandAgain(float deltaPt)
 	{
 		int temp; 
@@ -98,6 +101,7 @@ public abstract class Experiment : MonoBehaviour {
 
 	}
 
+	//intializes dictionary
 	public void initializeDict(float[] dataSet)
 	{
 		dataPtFreq = new Dictionary<string, int>();
@@ -118,6 +122,7 @@ public abstract class Experiment : MonoBehaviour {
 		}
 	}
 
+	//updates datapoint used; stored in a dictionary
 	public void updateDictFreq(float usedPoint)
 	{
 		int temp;
